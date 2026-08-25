@@ -37,8 +37,8 @@ export const adminDeleteSubmission = (id) =>
 
 export const adminListBatches = () => client.get('/admin/batches').then((r) => r.data);
 
-export const adminCreateBatch = (label) =>
-  client.post('/admin/batches', { label }).then((r) => r.data);
+export const adminCreateBatch = (label, startDate) =>
+  client.post('/admin/batches', { label, startDate }).then((r) => r.data);
 
 export const adminUpdateBatch = (id, data) =>
   client.put(`/admin/batches/${id}`, data).then((r) => r.data);

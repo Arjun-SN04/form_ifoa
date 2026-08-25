@@ -2,6 +2,7 @@ import { Document, Page, View, Text, Image, StyleSheet, Svg, Polyline } from '@r
 import logoSrc from '../assets/ifoa-logo.png';
 import watermarkSrc from '../assets/ifoa-watermark.png';
 import signatureSrc from '../assets/ifoa-signature.png';
+import { isFieldVisible } from '../utils/formSchema.js';
 
 const NAVY = '#000021';
 const HEADER_BAR = '#464667';
@@ -369,7 +370,9 @@ function TermsBlock({ content }) {
 }
 
 function renderSectionBody(section, sectionAnswers) {
-  const fields = [...section.fields].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  const fields = [...section.fields]
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+    .filter((field) => isFieldVisible(field, sectionAnswers));
   const rows = [];
   let pending = null;
 

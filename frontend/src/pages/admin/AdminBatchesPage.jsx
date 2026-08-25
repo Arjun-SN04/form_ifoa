@@ -9,6 +9,7 @@ import {
 export default function AdminBatchesPage() {
   const [batches, setBatches] = useState([]);
   const [label, setLabel] = useState('');
+  const [startDate, setStartDate] = useState('');
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState('');
@@ -28,13 +29,23 @@ export default function AdminBatchesPage() {
     setError('');
     setAdding(true);
     try {
-      await adminCreateBatch(label.trim());
+      await adminCreateBatch(label.trim(), startDate || undefined);
       setLabel('');
+      setStartDate('');
       load();
     } catch (err) {
       setError(err.response?.data?.message || 'Could not add batch.');
     } finally {
       setAdding(false);
+    }
+  };
+
+  const updateStartDate = async (batch, value) => {
+    try {
+      await adminUpdateBatch(batch._id, { startDate: value || null });
+      load();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to update batch start date.');
     }
   };
 
@@ -75,7 +86,7 @@ export default function AdminBatchesPage() {
           Create New Promotion Batch
         </h2>
         <form onSubmit={handleAdd} className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-          <div className="relative w-full sm:w-80">
+          <div className="relative w-full sm:w-64">
             <input
               type="text"
               value={label}
@@ -83,6 +94,15 @@ export default function AdminBatchesPage() {
               placeholder="e.g. 2026-02 or Fall 2026"
               required
               className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:bg-white focus:border-ifoa-navy focus:outline-none focus:ring-2 focus:ring-ifoa-navy/15 transition-all"
+            />
+          </div>
+          <div className="relative w-full sm:w-48">
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              title="Training start date (optional, shown to students)"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-slate-800 focus:bg-white focus:border-ifoa-navy focus:outline-none focus:ring-2 focus:ring-ifoa-navy/15 transition-all"
             />
           </div>
           <button
@@ -153,6 +173,7 @@ export default function AdminBatchesPage() {
               <thead className="sticky top-0 z-10 border-b border-slate-200 bg-slate-50/95 backdrop-blur-xs text-[11px] font-bold uppercase tracking-wider text-slate-400 shadow-xs">
                 <tr>
                   <th className="px-5 py-3.5">Batch Label</th>
+                  <th className="px-5 py-3.5">Start Date</th>
                   <th className="px-5 py-3.5">Enrollment Status</th>
                   <th className="px-5 py-3.5 text-right">Actions</th>
                 </tr>
@@ -162,6 +183,17 @@ export default function AdminBatchesPage() {
                   <tr key={b._id} className="hover:bg-slate-50/70 transition-colors">
                     <td className="px-5 py-3.5">
                       <span className="font-bold text-slate-900 text-sm">{b.label}</span>
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <input
+                        type="date"
+                        defaultValue={b.startDate ? b.startDate.slice(0, 10) : ''}
+                        onBlur={(e) => {
+                          const current = b.startDate ? b.startDate.slice(0, 10) : '';
+                          if (e.target.value !== current) updateStartDate(b, e.target.value);
+                        }}
+                        className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-700 focus:border-ifoa-navy focus:outline-none focus:ring-2 focus:ring-ifoa-navy/15 transition-all"
+                      />
                     </td>
                     <td className="px-5 py-3.5">
                       <span

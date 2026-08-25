@@ -97,12 +97,12 @@ export async function listBatches(req, res) {
 }
 
 export async function createBatch(req, res) {
-  const { label } = req.body;
+  const { label, startDate } = req.body;
   if (!label) {
     return res.status(400).json({ message: 'Label is required' });
   }
   try {
-    const batch = await TrainingBatch.create({ label });
+    const batch = await TrainingBatch.create({ label, startDate: startDate || null });
     res.status(201).json(batch);
   } catch (err) {
     if (err.code === 11000) {
@@ -118,6 +118,7 @@ export async function updateBatch(req, res) {
     return res.status(404).json({ message: 'Batch not found' });
   }
   if (req.body.label !== undefined) batch.label = req.body.label;
+  if (req.body.startDate !== undefined) batch.startDate = req.body.startDate || null;
   if (req.body.isActive !== undefined) batch.isActive = req.body.isActive;
   await batch.save();
   res.json(batch);

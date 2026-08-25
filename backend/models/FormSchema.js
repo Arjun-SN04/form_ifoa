@@ -35,6 +35,7 @@ const fieldSchema = new mongoose.Schema(
     content: { type: String, default: undefined },
     order: { type: Number, default: 0 },
     requiredIf: { type: requiredIfSchema, default: undefined },
+    visibleIf: { type: requiredIfSchema, default: undefined },
   },
   { _id: false }
 );

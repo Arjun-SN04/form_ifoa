@@ -1,13 +1,15 @@
 import { SectionCard } from '../SectionCard.jsx';
 import { DynamicField } from './DynamicField.jsx';
-import { isSectionComplete, isTrackableSection } from '../../utils/formSchema.js';
+import { isSectionComplete, isTrackableSection, isFieldVisible } from '../../utils/formSchema.js';
 
 export function DynamicSection({ section, value = {}, onChange, batches, stepNumber, fieldErrors = {} }) {
   const setField = (fieldId) => (fieldValue) => {
     onChange({ ...value, [fieldId]: fieldValue });
   };
 
-  const fields = [...section.fields].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  const fields = [...section.fields]
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+    .filter((field) => isFieldVisible(field, value));
 
   return (
     <SectionCard

@@ -323,7 +323,13 @@ export function DynamicField({ field, sectionId, value, onChange, batches = [], 
             name={field.id}
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            options={batches.map((b) => b.label)}
+            options={batches.map((b) => ({
+              value: b.label,
+              label: b.label,
+              subtitle: b.startDate
+                ? `Starts ${new Date(b.startDate).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}`
+                : undefined,
+            }))}
             required={field.required}
             placeholder={batches.length ? 'Select an available training batch...' : 'No batches available'}
             error={error}

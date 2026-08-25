@@ -25,6 +25,7 @@ export function validateAnswers(sections, answers) {
     const sectionAnswers = answers?.[section.id] || {};
     for (const field of section.fields) {
       if (field.type === 'staticText' || field.type === 'promotionBatch') continue;
+      if (field.visibleIf && !conditionMet(field.visibleIf, sectionAnswers)) continue;
 
       const isConsentOrAgreement =
         field.type === 'checkbox' &&

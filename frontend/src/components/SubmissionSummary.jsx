@@ -1,4 +1,5 @@
 import { SectionCard } from './SectionCard.jsx';
+import { isFieldVisible } from '../utils/formSchema.js';
 
 function SummaryRow({ label, value, fullWidth = false }) {
   const isEmail = typeof value === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
@@ -58,6 +59,7 @@ export function SubmissionSummary({ schema, answers }) {
             <Grid>
               {fields.map((field) => {
                 if (field.type === 'staticText') return null;
+                if (!isFieldVisible(field, sectionAnswers)) return null;
                 const isWide = field.type === 'checkbox' || field.type === 'checkboxGroup' || field.type === 'textarea';
                 return (
                   <SummaryRow

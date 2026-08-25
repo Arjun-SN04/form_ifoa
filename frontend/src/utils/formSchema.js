@@ -40,18 +40,38 @@ export function isFieldRequired(field, sectionAnswers) {
   return Boolean(field.required || (field.requiredIf && conditionMet(field.requiredIf, sectionAnswers)) || isConsentOrAgreement);
 }
 
+export function isFieldVisible(field, sectionAnswers) {
+  return !field.visibleIf || conditionMet(field.visibleIf, sectionAnswers);
+}
+
+// A section only reads as "Completed" once its required fields are filled.
+// Marking a field optional in the Form Builder means it's okay to leave
+// blank — it does NOT mean the section is done the moment it's rendered.
+// So a section with zero required fields waits for at least one value
+// before showing as complete, instead of appearing pre-checked with
+// nothing filled in.
 export function isSectionComplete(section, sectionAnswers = {}) {
-  return section.fields.every((field) => {
-    if (field.type === 'staticText' || field.type === 'promotionBatch') return true;
-    if (!isFieldRequired(field, sectionAnswers)) return true;
-    return !isFieldEmpty(field, sectionAnswers[field.id]);
-  });
+  const fillableFields = section.fields.filter(
+    (field) => field.type !== 'staticText' && isFieldVisible(field, sectionAnswers)
+  );
+
+  // Purely informational sections (only staticText) are not actionable completion steps
+  if (fillableFields.length === 0) {
+    return false;
+  }
+
+  const requiredFields = fillableFields.filter((field) => isFieldRequired(field, sectionAnswers));
+  if (requiredFields.length > 0) {
+    return requiredFields.every((field) => !isFieldEmpty(field, sectionAnswers[field.id]));
+  }
+
+  return fillableFields.some((field) => !isFieldEmpty(field, sectionAnswers[field.id]));
 }
 
 // A section only counts toward the "N of M sections complete" progress stat
 // if it has at least one field a student actually fills in.
 export function isTrackableSection(section) {
-  return section.fields.some((field) => field.type !== 'staticText' && field.type !== 'promotionBatch');
+  return section.fields.some((field) => field.type !== 'staticText');
 }
 
 export function getSubmissionDisplayName(submission) {
@@ -116,6 +136,7 @@ export function getDetailedValidationErrors(schema, answers) {
     const sectionAnswers = answers?.[section.id] || {};
     for (const field of section.fields) {
       if (field.type === 'staticText' || field.type === 'promotionBatch') continue;
+      if (!isFieldVisible(field, sectionAnswers)) continue;
       if (isFieldRequired(field, sectionAnswers) && isFieldEmpty(field, sectionAnswers[field.id])) {
         const errorMsg = field.type === 'checkbox'
           ? `${section.title}: You must agree to and accept the ${field.label ? (field.label.length > 50 ? field.label.slice(0, 47) + '...' : field.label) : 'required agreement'}.`
