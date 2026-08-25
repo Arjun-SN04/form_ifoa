@@ -4,9 +4,12 @@ import Submission from '../models/Submission.js';
 import TrainingBatch from '../models/TrainingBatch.js';
 import { validateAnswers, findPromotionBatchFieldId } from '../utils/validateAnswers.js';
 
+const isProduction = process.env.NODE_ENV === 'production';
+
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  sameSite: 'lax',
+  sameSite: isProduction ? 'none' : 'lax',
+  secure: isProduction,
   maxAge: 12 * 60 * 60 * 1000,
 };
 
@@ -28,7 +31,7 @@ export async function login(req, res) {
 }
 
 export function logout(req, res) {
-  res.clearCookie('token');
+  res.clearCookie('token', { httpOnly: true, sameSite: COOKIE_OPTIONS.sameSite, secure: COOKIE_OPTIONS.secure });
   res.json({ message: 'Logged out' });
 }
 
